@@ -63,9 +63,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
   const handleSave = () => {
     onSave(localRules);
     setHasSaved(true);
-    setTimeout(() => { 
-      setHasSaved(false); 
-      onClose(); 
+    setTimeout(() => {
+      setHasSaved(false);
+      onClose();
     }, 800);
   };
 
@@ -91,9 +91,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
         {/* Tab Navigation with horizontal scrolling for mobile responsiveness */}
         <div className="flex bg-wa-surface/30 px-2 pt-2 border-b border-wa-border shrink-0 overflow-x-auto scrollbar-hide">
           {(['rules', 'training', 'triggers', 'api', 'whatsapp'] as const).map(tab => (
-            <button 
-              key={tab} 
-              onClick={() => setActiveTab(tab)} 
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
               className={`flex-none px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] border-b-2 transition-all whitespace-nowrap ${activeTab === tab ? 'border-wa-accent text-wa-accent' : 'border-transparent text-wa-muted hover:text-wa-text'}`}
             >
               {tab === 'api' ? 'Assistant API' : tab === 'whatsapp' ? 'WhatsApp API' : tab}
@@ -120,7 +120,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {(['gemini', 'openai', 'deepseek', 'claude'] as const).map(p => (
-                    <button key={p} onClick={() => setLocalRules({...localRules, apiProvider: p})} className={`py-3 px-4 text-xs font-bold rounded-xl border-2 transition-all flex items-center justify-between ${localRules.apiProvider === p ? 'border-wa-accent bg-wa-accent/10 text-wa-accent shadow-lg' : 'border-wa-border bg-wa-surface/40 text-wa-muted'}`}>
+                    <button key={p} onClick={() => setLocalRules({ ...localRules, apiProvider: p })} className={`py-3 px-4 text-xs font-bold rounded-xl border-2 transition-all flex items-center justify-between ${localRules.apiProvider === p ? 'border-wa-accent bg-wa-accent/10 text-wa-accent shadow-lg' : 'border-wa-border bg-wa-surface/40 text-wa-muted'}`}>
                       <span className="capitalize">{p}</span>
                       {localRules.apiProvider === p && <CheckCircle2 className="w-3.5 h-3.5" />}
                     </button>
@@ -134,7 +134,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 </label>
                 <div className="flex flex-col gap-2">
                   {(['flash', 'reasoning', 'deepseek'] as const).map(m => (
-                    <button key={m} onClick={() => setLocalRules({...localRules, engineMode: m})} className={`py-4 px-5 text-xs font-bold rounded-2xl border-2 transition-all text-left flex items-center justify-between ${localRules.engineMode === m ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-wa-border bg-wa-surface/40 text-wa-muted'}`}>
+                    <button key={m} onClick={() => setLocalRules({ ...localRules, engineMode: m })} className={`py-4 px-5 text-xs font-bold rounded-2xl border-2 transition-all text-left flex items-center justify-between ${localRules.engineMode === m ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-wa-border bg-wa-surface/40 text-wa-muted'}`}>
                       <div>
                         <span className="capitalize block">{m === 'reasoning' ? 'Professional Logic' : m === 'deepseek' ? 'Deep Reasoning R1' : 'Fast Response'}</span>
                         <span className="text-[10px] opacity-60 font-medium">{m === 'flash' ? 'Speed optimized' : m === 'reasoning' ? 'Clinical analysis' : 'Exhaustive thinking'}</span>
@@ -165,7 +165,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
               <div className="space-y-4">
                 {(localRules.trainingExamples || []).map(ex => (
                   <div key={ex.id} className="p-5 bg-wa-surface border border-wa-border rounded-3xl space-y-4 relative group">
-                    <button onClick={() => setLocalRules(prev => ({...prev, trainingExamples: (prev.trainingExamples || []).filter(x => x.id !== ex.id)}))} className="absolute top-4 right-4 text-wa-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setLocalRules(prev => ({ ...prev, trainingExamples: (prev.trainingExamples || []).filter(x => x.id !== ex.id) }))} className="absolute top-4 right-4 text-wa-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
                     <div className="space-y-1">
                       <label className="text-[9px] font-black text-wa-muted uppercase">User Prompt</label>
                       <textarea value={ex.userPrompt} onChange={e => updateExample(ex.id, 'userPrompt', e.target.value)} placeholder="e.g. I am 180cm tall" className="w-full bg-wa-bg border border-wa-border p-2.5 rounded-xl text-[12px] font-medium outline-none focus:border-wa-accent" rows={2} />
@@ -198,7 +198,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
               <div className="space-y-4">
                 {(localRules.mediaTriggers || []).map(t => (
                   <div key={t.id} className="p-5 bg-wa-surface border border-wa-border rounded-3xl space-y-4 relative group animate-fade-in">
-                    <button onClick={() => setLocalRules(prev => ({...prev, mediaTriggers: (prev.mediaTriggers || []).filter(x => x.id !== t.id)}))} className="absolute top-4 right-4 text-wa-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setLocalRules(prev => ({ ...prev, mediaTriggers: (prev.mediaTriggers || []).filter(x => x.id !== t.id) }))} className="absolute top-4 right-4 text-wa-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[9px] font-black text-wa-muted uppercase">Keyword</label>
@@ -238,7 +238,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 <p className="text-[10px] text-wa-muted font-medium leading-relaxed">
                   Select a Gemini API key from a billing-enabled Google Cloud project. This is mandatory for simulating premium engines like DeepSeek or GPT-4.
                 </p>
-                <button 
+                <button
                   onClick={handleChangeApiKey}
                   className="w-full bg-wa-accent text-wa-bg py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-wa-accent/10 hover:scale-105 active:scale-95 transition-all"
                 >
@@ -250,16 +250,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 <h5 className="text-[10px] font-black text-wa-muted uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                   <Sliders className="w-4 h-4" /> Technical Parameters
                 </h5>
-                
+
                 <div className="space-y-5">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <label className="text-[11px] font-bold text-wa-muted uppercase">Temperature: {localRules.temperature}</label>
                     </div>
-                    <input 
-                      type="range" min="0" max="1" step="0.1" 
-                      value={localRules.temperature} 
-                      onChange={e => setLocalRules({...localRules, temperature: parseFloat(e.target.value)})}
+                    <input
+                      type="range" min="0" max="1" step="0.1"
+                      value={localRules.temperature}
+                      onChange={e => setLocalRules({ ...localRules, temperature: parseFloat(e.target.value) })}
                       className="w-full h-1.5 bg-wa-border rounded-lg appearance-none cursor-pointer accent-wa-accent"
                     />
                   </div>
@@ -280,7 +280,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 </p>
                 <div className="flex items-center justify-between p-3 bg-wa-bg/50 border border-wa-border rounded-xl">
                   <span className="text-[11px] font-bold text-wa-text uppercase tracking-widest">Enable Integration</span>
-                  <button 
+                  <button
                     onClick={() => updateWhatsApp('isEnabled', !localRules.whatsappConfig.isEnabled)}
                     className={`w-12 h-6 rounded-full transition-all relative ${localRules.whatsappConfig.isEnabled ? 'bg-wa-accent' : 'bg-wa-border'}`}
                   >
@@ -292,17 +292,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
               <div className="p-5 bg-wa-surface border border-wa-border rounded-[32px] space-y-4">
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Phone Number ID</label>
-                  <input 
-                    value={localRules.whatsappConfig.phoneNumberId} 
+                  <input
+                    value={localRules.whatsappConfig.phoneNumberId}
                     onChange={e => updateWhatsApp('phoneNumberId', e.target.value)}
                     placeholder="e.g. 1042304928..."
-                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent" 
+                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Permanent Access Token</label>
-                  <textarea 
-                    value={localRules.whatsappConfig.accessToken} 
+                  <textarea
+                    value={localRules.whatsappConfig.accessToken}
                     onChange={e => updateWhatsApp('accessToken', e.target.value)}
                     placeholder="EAAG..."
                     className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[10px] font-mono outline-none focus:border-wa-accent"
@@ -311,23 +311,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                 </div>
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Verify Token (Webhook)</label>
-                  <input 
-                    value={localRules.whatsappConfig.verifyToken} 
+                  <input
+                    value={localRules.whatsappConfig.verifyToken}
                     onChange={e => updateWhatsApp('verifyToken', e.target.value)}
-                    placeholder="health_bot_verify..."
-                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent" 
+                    placeholder="mysecrettoken123"
+                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent"
                   />
                 </div>
-              </div>
 
-              <div className="p-5 bg-wa-surface/50 border border-wa-border/50 border-dashed rounded-[32px] space-y-3">
-                <div className="flex items-center gap-2">
-                  <LinkIcon className="w-3.5 h-3.5 text-wa-muted" />
-                  <span className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Webhook URL Endpoint</span>
-                </div>
-                <div className="bg-wa-bg p-3 rounded-xl border border-wa-border flex items-center justify-between group">
-                  <span className="text-[10px] font-mono text-wa-muted truncate">{localRules.whatsappConfig.webhookUrl || 'Not configured'}</span>
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 opacity-50 group-hover:opacity-100 cursor-help" />
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Webhook URL Endpoint</label>
+                  <input
+                    value={localRules.whatsappConfig.webhookUrl}
+                    onChange={e => updateWhatsApp('webhookUrl', e.target.value)}
+                    placeholder="https://.../api/webhook"
+                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent"
+                  />
+                  <p className="text-[9px] text-wa-muted/60 mt-1 font-medium">Use the Vercel URL ending in /api/webhook</p>
                 </div>
               </div>
             </div>
