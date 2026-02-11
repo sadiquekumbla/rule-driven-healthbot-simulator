@@ -22,18 +22,35 @@ const App: React.FC = () => {
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [hasKey, setHasKey] = useState<boolean>(true);
+  const [hasKey, setHasKey] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && window.localStorage.getItem("gemini_api_key")) {
+      return true;
+    }
+    // Check env vars synchronously if possible or default to false
+    // @ts-ignore
+    const env: any = typeof import.meta !== "undefined" ? import.meta.env || {} : {};
+    return !!(env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY);
+  });
+
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState("");
-  
+
   const [rules, setRules] = useState<AdminRules>(() => {
     const base = { ...DEFAULT_RULES };
+    // Pre-fill webhook URL if client-side
+    if (typeof window !== 'undefined') {
+      base.whatsappConfig = {
+        ...base.whatsappConfig,
+        webhookUrl: `${window.location.origin}/api/webhook`,
+        verifyToken: base.whatsappConfig?.verifyToken || 'mysecrettoken123'
+      };
+    }
     base.systemPrompt = base.systemPrompt.replace('{COURSES_LIST}', INITIAL_COURSES.map(c => c.title).join(', '));
     return base;
   });
-  
+
   const [botService] = useState(() => new HealthBotService(rules));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -51,38 +68,19 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Simplified key check effect that mainly handles AI Studio check
   useEffect(() => {
     const checkKey = async () => {
-      let hasAnyKey = false;
-
-      // 1) Browser-local key set via UI
-      if (typeof window !== "undefined") {
-        const stored = window.localStorage.getItem("gemini_api_key");
-        if (stored) hasAnyKey = true;
-      }
-
-      // 2) Env-based keys (for local dev)
-      try {
-        // @ts-ignore - import.meta is provided by Vite
-        const env: any = typeof import.meta !== "undefined" ? import.meta.env || {} : {};
-        if (env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY) {
-          hasAnyKey = true;
-        }
-      } catch {
-        // ignore env access errors
-      }
-
-      // 3) AI Studio in-browser key selection (if available)
+      // If we already have a key from init state (localStorage/env), we're good usually.
+      // But let's check AI Studio just in case user wants to use that.
       if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === "function") {
         try {
           const selected = await window.aistudio.hasSelectedApiKey();
-          if (selected) hasAnyKey = true;
+          if (selected) setHasKey(true);
         } catch (err) {
           console.error("AI Studio key check failed", err);
         }
       }
-
-      setHasKey(hasAnyKey);
     };
     checkKey();
   }, []);
@@ -113,9 +111,9 @@ const App: React.FC = () => {
     setApiKeyInput("");
   };
 
-  const activeClient = useMemo(() => 
+  const activeClient = useMemo(() =>
     clients.find(c => c.id === activeClientId) || null
-  , [clients, activeClientId]);
+    , [clients, activeClientId]);
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
@@ -167,16 +165,16 @@ const App: React.FC = () => {
     if (!valueToSend.trim() && !audioData && !activeClientId) return;
 
     if (valueToSend.toLowerCase().includes('manual')) {
-       const userMsg: Message = { id: `user-${Date.now()}`, role: 'user', text: "Requesting manual assistant...", timestamp: new Date() };
-       setClients(prev => prev.map(c => c.id === activeClientId ? { ...c, messages: [...c.messages, userMsg], lastMessageAt: new Date() } : c));
-       setInputValue('');
-       setIsTyping(true);
-       setTimeout(() => {
-         const botMsg: Message = { id: `bot-${Date.now()}`, role: 'model', text: "Human coach coming in. Sit tight! 🎧", timestamp: new Date() };
-         setClients(prev => prev.map(c => c.id === activeClientId ? { ...c, messages: [...c.messages, botMsg], lastMessageAt: new Date() } : c));
-         setIsTyping(false);
-       }, 1000);
-       return;
+      const userMsg: Message = { id: `user-${Date.now()}`, role: 'user', text: "Requesting manual assistant...", timestamp: new Date() };
+      setClients(prev => prev.map(c => c.id === activeClientId ? { ...c, messages: [...c.messages, userMsg], lastMessageAt: new Date() } : c));
+      setInputValue('');
+      setIsTyping(true);
+      setTimeout(() => {
+        const botMsg: Message = { id: `bot-${Date.now()}`, role: 'model', text: "Human coach coming in. Sit tight! 🎧", timestamp: new Date() };
+        setClients(prev => prev.map(c => c.id === activeClientId ? { ...c, messages: [...c.messages, botMsg], lastMessageAt: new Date() } : c));
+        setIsTyping(false);
+      }, 1000);
+      return;
     }
 
     const userMsg: Message = {
@@ -186,7 +184,7 @@ const App: React.FC = () => {
       timestamp: new Date()
     };
 
-    setClients(prev => prev.map(c => 
+    setClients(prev => prev.map(c =>
       c.id === activeClientId ? { ...c, messages: [...c.messages, userMsg], lastMessageAt: new Date() } : c
     ));
     setInputValue('');
@@ -196,7 +194,7 @@ const App: React.FC = () => {
     const trigger = checkForTriggers(valueToSend);
     try {
       const result = await botService.sendMessage(valueToSend, audioData);
-      
+
       const botMsg: Message = {
         id: `bot-${Date.now()}`,
         role: 'model',
@@ -210,7 +208,7 @@ const App: React.FC = () => {
         } : undefined
       };
 
-      setClients(prev => prev.map(c => 
+      setClients(prev => prev.map(c =>
         c.id === activeClientId ? { ...c, messages: [...c.messages, botMsg], context: result.context, lastMessageAt: new Date() } : c
       ));
     } catch (e: any) {
@@ -238,13 +236,13 @@ const App: React.FC = () => {
   const startRecording = async (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     if (isRecording) return;
-    
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      
+
       mediaRecorder.ondataavailable = e => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
@@ -271,12 +269,12 @@ const App: React.FC = () => {
       recordingStartTimeRef.current = Date.now();
       setRecordingTime(0);
       timerIntervalRef.current = window.setInterval(() => setRecordingTime(p => p + 1), 1000);
-      
+
       // Haptic feedback for recording start if available
       if ('vibrate' in navigator) navigator.vibrate(50);
-    } catch (err) { 
+    } catch (err) {
       console.error("Mic error:", err);
-      alert("Mic access required for this."); 
+      alert("Mic access required for this.");
     }
   };
 
@@ -320,7 +318,7 @@ const App: React.FC = () => {
               We need a Gemini API key from a billing project to keep these simulation engines running smooth.
             </p>
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={handleOpenKeySelection}
                 className="w-full bg-wa-accent text-wa-bg py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:brightness-110 active:scale-95 transition-all"
               >
@@ -364,11 +362,11 @@ const App: React.FC = () => {
         <div className="flex items-center gap-4 overflow-hidden">
           <div className="flex items-center gap-2 cursor-default shrink-0">
             <div className="w-8 h-8 rounded-xl bg-wa-accent flex items-center justify-center shadow-lg shadow-wa-accent/20">
-               <Zap className="w-5 h-5 text-wa-bg fill-current" />
+              <Zap className="w-5 h-5 text-wa-bg fill-current" />
             </div>
             <span className="hidden md:inline text-sm font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-wa-accent to-emerald-400 uppercase">HEALTHCORE</span>
           </div>
-          
+
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide shrink">
             <button onClick={() => setView('chat')} className={`nav-btn shrink-0 ${view === 'chat' ? 'active' : ''}`}><MessageSquare className="w-4 h-4" /> <span className="hidden sm:inline">Sim</span></button>
             <button onClick={() => setView('courses')} className={`nav-btn shrink-0 ${view === 'courses' ? 'active' : ''}`}><BookOpen className="w-4 h-4" /> <span className="hidden sm:inline">Plans</span></button>
@@ -377,7 +375,7 @@ const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button 
+          <button
             onClick={() => setIsAdminOpen(true)}
             className="w-9 h-9 rounded-xl bg-wa-border/40 hover:bg-wa-border/70 border border-wa-border/60 flex items-center justify-center text-wa-muted hover:text-wa-accent transition-all"
           >
@@ -389,11 +387,11 @@ const App: React.FC = () => {
       <div className={`flex-1 overflow-hidden relative ${view === 'chat' ? 'app-container' : 'flex flex-col'}`}>
         {view === 'chat' && showSidebar && (
           <aside className="border-r border-wa-border bg-wa-bg flex flex-col shrink-0 z-20 h-full overflow-hidden">
-            <ClientList 
-              clients={clients} 
-              activeClientId={activeClientId} 
-              onSelectClient={(id) => setActiveClientId(id)} 
-              onNewChat={createNewClient} 
+            <ClientList
+              clients={clients}
+              activeClientId={activeClientId}
+              onSelectClient={(id) => setActiveClientId(id)}
+              onNewChat={createNewClient}
             />
           </aside>
         )}
@@ -470,11 +468,11 @@ const App: React.FC = () => {
                     </div>
                   )}
 
-                  <Paperclip 
+                  <Paperclip
                     onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                    className={`w-6 h-6 cursor-pointer transition-colors shrink-0 ${showAttachmentMenu ? 'text-wa-accent' : 'text-wa-muted hover:text-wa-text'}`} 
+                    className={`w-6 h-6 cursor-pointer transition-colors shrink-0 ${showAttachmentMenu ? 'text-wa-accent' : 'text-wa-muted hover:text-wa-text'}`}
                   />
-                  
+
                   <div className="flex-1 bg-wa-border/40 rounded-2xl flex items-center px-4 py-3 transition-all focus-within:bg-wa-border/60 overflow-hidden min-h-[48px]">
                     {isRecording ? (
                       <div className="flex items-center gap-3 animate-pulse text-red-500">
@@ -483,12 +481,12 @@ const App: React.FC = () => {
                         <span className="text-[10px] text-wa-muted font-bold ml-auto opacity-50">Release to Send</span>
                       </div>
                     ) : (
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={inputValue}
                         onChange={e => setInputValue(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleSend()}
-                        placeholder="Say hi..." 
+                        placeholder="Say hi..."
                         className="flex-1 bg-transparent outline-none text-[15px] text-wa-text placeholder-wa-muted/60"
                       />
                     )}
@@ -500,8 +498,8 @@ const App: React.FC = () => {
                         <Send className="w-5.5 h-5.5 ml-0.5" />
                       </button>
                     ) : (
-                      <button 
-                        onMouseDown={startRecording} 
+                      <button
+                        onMouseDown={startRecording}
                         onMouseUp={stopRecording}
                         onMouseLeave={stopRecording}
                         onTouchStart={startRecording}
@@ -538,14 +536,14 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      <AdminPanel 
-        rules={rules} 
-        context={activeClient?.context || {} as any} 
-        onSave={handleUpdateRules} 
+      <AdminPanel
+        rules={rules}
+        context={activeClient?.context || {} as any}
+        onSave={handleUpdateRules}
         onResetChat={() => {
           setActiveClientId(null);
           setClients([]);
-        }} 
+        }}
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
       />

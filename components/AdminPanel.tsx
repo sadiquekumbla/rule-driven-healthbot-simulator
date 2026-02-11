@@ -321,13 +321,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
 
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-wa-muted uppercase tracking-widest">Webhook URL Endpoint</label>
-                  <input
-                    value={localRules.whatsappConfig.webhookUrl}
-                    onChange={e => updateWhatsApp('webhookUrl', e.target.value)}
-                    placeholder="https://.../api/webhook"
-                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent"
-                  />
-                  <p className="text-[9px] text-wa-muted/60 mt-1 font-medium">Use the Vercel URL ending in /api/webhook</p>
+                  <div className="bg-wa-bg border border-wa-border p-3.5 rounded-2xl flex items-center justify-between group">
+                    <span className="text-[12px] font-mono select-all">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/api/webhook` : '...'}
+                    </span>
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 opacity-50 group-hover:opacity-100" />
+                  </div>
+                  <p className="text-[9px] text-wa-muted/60 mt-1 font-medium">Auto-configured Vercel Endpoint</p>
                 </div>
               </div>
             </div>
