@@ -212,9 +212,10 @@ const App: React.FC = () => {
         c.id === activeClientId ? { ...c, messages: [...c.messages, botMsg], context: result.context, lastMessageAt: new Date() } : c
       ));
     } catch (e: any) {
-      if (e.message?.includes("Requested entity was not found") || e.message?.includes("quota")) {
+      if (e.message?.includes("API key not valid") || e.message?.includes("key expired")) {
         setHasKey(false);
       }
+      // Quota errors or other errors should just show the message, not force re-entry of key unless it's actually invalid.
       const botMsg: Message = {
         id: `bot-err-${Date.now()}`,
         role: 'model',
