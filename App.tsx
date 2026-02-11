@@ -12,14 +12,41 @@ import Courses from './components/Courses';
 import Login from './components/Login';
 import { Send, MoreVertical, Phone, Video, Paperclip, Brain, Zap, Sparkles, LayoutDashboard, MessageSquare, Globe, PieChart, Mic, Square, Trash2, BookOpen, Image as ImageIcon, FileText, UserCircle, Key, Settings as SettingsIcon, ChevronLeft, Menu } from 'lucide-react';
 
+const dateReviver = (key: string, value: any) => {
+  if ((key === 'timestamp' || key === 'createdAt' || key === 'lastMessageAt') && typeof value === 'string') {
+    return new Date(value);
+  }
+  return value;
+};
+
 const App: React.FC = () => {
   const [view, setView] = useState<'chat' | 'dashboard' | 'analysis' | 'courses'>('chat');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('healthcore_is_authenticated') === 'true';
   });
-  const [clients, setClients] = useState<Client[]>([]);
-  const [activeClientId, setActiveClientId] = useState<string | null>(null);
+
+  const [clients, setClients] = useState<Client[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('healthcore_clients');
+      if (saved) {
+        try {
+          return JSON.parse(saved, dateReviver);
+        } catch (e) {
+          console.error("Failed to load clients from localStorage", e);
+        }
+      }
+    }
+    return [];
+  });
+
+  const [activeClientId, setActiveClientId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('healthcore_active_client_id');
+    }
+    return null;
+  });
+
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [hasKey, setHasKey] = useState<boolean>(() => {
@@ -38,18 +65,58 @@ const App: React.FC = () => {
   const [apiKeyInput, setApiKeyInput] = useState("");
 
   const [rules, setRules] = useState<AdminRules>(() => {
-    const base = { ...DEFAULT_RULES };
-    // Pre-fill webhook URL if client-side
+    let base = { ...DEFAULT_RULES };
+
     if (typeof window !== 'undefined') {
-      base.whatsappConfig = {
-        ...base.whatsappConfig,
-        webhookUrl: `${window.location.origin}/api/webhook`,
-        verifyToken: base.whatsappConfig?.verifyToken || 'mysecrettoken123'
-      };
+      const saved = localStorage.getItem('healthcore_rules');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Merge parsed rules with default rules to ensure new fields are present
+          base = { ...base, ...parsed };
+        } catch (e) {
+          console.error("Failed to load rules from localStorage", e);
+        }
+      }
+
+      // Pre-fill webhook URL if client-side and not already set by stored rules
+      if (!base.whatsappConfig?.webhookUrl) {
+        base.whatsappConfig = {
+          ...base.whatsappConfig,
+          webhookUrl: `${window.location.origin}/api/webhook`,
+          verifyToken: base.whatsappConfig?.verifyToken || 'mysecrettoken123'
+        };
+      }
     }
-    base.systemPrompt = base.systemPrompt.replace('{COURSES_LIST}', INITIAL_COURSES.map(c => c.title).join(', '));
+    // Ensure system prompt has course list, only if it contains the placeholder
+    if (base.systemPrompt.includes('{COURSES_LIST}')) {
+      base.systemPrompt = base.systemPrompt.replace('{COURSES_LIST}', INITIAL_COURSES.map(c => c.title).join(', '));
+    }
     return base;
   });
+
+  // Persistence Effects
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('healthcore_clients', JSON.stringify(clients));
+    }
+  }, [clients]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (activeClientId) {
+        localStorage.setItem('healthcore_active_client_id', activeClientId);
+      } else {
+        localStorage.removeItem('healthcore_active_client_id');
+      }
+    }
+  }, [activeClientId]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('healthcore_rules', JSON.stringify(rules));
+    }
+  }, [rules]);
 
   const [botService] = useState(() => new HealthBotService(rules));
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -73,9 +140,9 @@ const App: React.FC = () => {
     const checkKey = async () => {
       // If we already have a key from init state (localStorage/env), we're good usually.
       // But let's check AI Studio just in case user wants to use that.
-      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === "function") {
+      if ((window as any).aistudio && typeof (window as any).aistudio.hasSelectedApiKey === "function") {
         try {
-          const selected = await window.aistudio.hasSelectedApiKey();
+          const selected = await (window as any).aistudio.hasSelectedApiKey();
           if (selected) setHasKey(true);
         } catch (err) {
           console.error("AI Studio key check failed", err);
@@ -86,9 +153,9 @@ const App: React.FC = () => {
   }, []);
 
   const handleOpenKeySelection = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === "function") {
+    if ((window as any).aistudio && typeof (window as any).aistudio.openSelectKey === "function") {
       try {
-        await window.aistudio.openSelectKey();
+        await (window as any).aistudio.openSelectKey();
         setHasKey(true);
         return;
       } catch (err) {
