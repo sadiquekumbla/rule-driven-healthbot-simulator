@@ -65,14 +65,20 @@ const App: React.FC = () => {
   const [apiKeyInput, setApiKeyInput] = useState("");
 
   const [rules, setRules] = useState<AdminRules>(() => {
-    let base = { ...DEFAULT_RULES };
+    // Start with deep copy of defaults to ensure no reference issues
+    let base = JSON.parse(JSON.stringify(DEFAULT_RULES));
+    // Ensure nested objects exist
+    if (!base.whatsappConfig) base.whatsappConfig = {};
 
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('healthcore_rules');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          // Merge parsed rules with default rules to ensure new fields are present
+          // Robust Deep Merge for whatsappConfig
+          if (parsed.whatsappConfig) {
+            parsed.whatsappConfig = { ...base.whatsappConfig, ...parsed.whatsappConfig };
+          }
           base = { ...base, ...parsed };
         } catch (e) {
           console.error("Failed to load rules from localStorage", e);
@@ -81,11 +87,11 @@ const App: React.FC = () => {
 
       // Pre-fill webhook URL if client-side and not already set by stored rules
       if (!base.whatsappConfig?.webhookUrl) {
-        base.whatsappConfig = {
-          ...base.whatsappConfig,
-          webhookUrl: `${window.location.origin}/api/webhook`,
-          verifyToken: base.whatsappConfig?.verifyToken || 'mysecrettoken123'
-        };
+        base.whatsappConfig.webhookUrl = `${window.location.origin}/api/webhook`;
+      }
+      // Ensure verify token has a default
+      if (!base.whatsappConfig?.verifyToken) {
+        base.whatsappConfig.verifyToken = 'mysecrettoken123';
       }
     }
     // Ensure system prompt has course list, only if it contains the placeholder
@@ -111,6 +117,16 @@ const App: React.FC = () => {
       }
     }
   }, [activeClientId]);
+
+  // Double check persistent key on mount to handle edge cases
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem("gemini_api_key");
+      if (stored && !hasKey) {
+        setHasKey(true);
+      }
+    }
+  }, []); // Run once on mount
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
