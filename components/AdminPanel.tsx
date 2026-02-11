@@ -28,6 +28,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
   }));
   const [activeTab, setActiveTab] = useState<'rules' | 'training' | 'triggers' | 'api' | 'whatsapp'>('rules');
   const [hasSaved, setHasSaved] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return window.localStorage.getItem('gemini_api_key') || '';
+    }
+    return '';
+  });
+  const [apiKeySaved, setApiKeySaved] = useState(false);
 
   const addTrigger = () => {
     const newT: MediaTrigger = { id: Date.now().toString(), keyword: "", type: "video", url: "", botReply: "" };
@@ -69,10 +76,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
     }, 800);
   };
 
-  const handleChangeApiKey = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-      await window.aistudio.openSelectKey();
+  const handleSaveGeminiKey = () => {
+    const trimmed = apiKeyInput.trim();
+    if (!trimmed) return;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('gemini_api_key', trimmed);
     }
+    setApiKeySaved(true);
+    setTimeout(() => setApiKeySaved(false), 1000);
   };
 
   if (!isOpen) return null;
@@ -236,14 +247,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ rules, context, onSave, onReset
                   <h5 className="text-[11px] font-black text-wa-accent uppercase tracking-[0.2em]">API Key Management</h5>
                 </div>
                 <p className="text-[10px] text-wa-muted font-medium leading-relaxed">
-                  Select a Gemini API key from a billing-enabled Google Cloud project. This is mandatory for simulating premium engines like DeepSeek or GPT-4.
+                  This Gemini API key is stored locally in this browser and used for all conversations. You can update it anytime.
                 </p>
-                <button
-                  onClick={handleChangeApiKey}
-                  className="w-full bg-wa-accent text-wa-bg py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-wa-accent/10 hover:scale-105 active:scale-95 transition-all"
-                >
-                  Connect Paid API Key
-                </button>
+                <div className="space-y-2">
+                  <label className="block text-[9px] font-black text-wa-muted uppercase tracking-[0.2em]">
+                    Gemini API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    placeholder="AIza..."
+                    className="w-full bg-wa-bg border border-wa-border p-3.5 rounded-2xl text-[12px] font-mono outline-none focus:border-wa-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveGeminiKey}
+                    disabled={!apiKeyInput.trim()}
+                    className={`w-full py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-wa-accent/10 transition-all ${
+                      apiKeySaved
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-wa-accent text-wa-bg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+                    }`}
+                  >
+                    {apiKeySaved ? 'Key Saved' : 'Save API Key'}
+                  </button>
+                  <p className="text-[9px] text-wa-muted mt-1">
+                    Tip: For production on Vercel, also set <code>GEMINI_API_KEY</code> in your environment variables.
+                  </p>
+                </div>
               </div>
 
               <div className="p-6 bg-wa-surface border border-wa-border rounded-[32px] space-y-6">

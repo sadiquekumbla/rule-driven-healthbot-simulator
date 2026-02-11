@@ -48,7 +48,7 @@ export const INITIAL_COURSES: Course[] = [
 ];
 
 export const DEFAULT_RULES: AdminRules = {
-  botName: "HealthCoach Pro",
+  botName: "Karate Fitness AI Assistance",
   priceTable: INITIAL_COURSES.map(c => `${c.title}: ₹${c.price}`).join(', '),
   apiProvider: 'gemini',
   engineMode: 'flash',
@@ -86,8 +86,8 @@ export const DEFAULT_RULES: AdminRules = {
   whatsappConfig: {
     phoneNumberId: "",
     accessToken: "",
-    verifyToken: "health_bot_verify_2024",
-    webhookUrl: "https://your-domain.com/api/webhook",
+    verifyToken: "mysecrettoken123",
+    webhookUrl: "https://rule-driven-healthbot-simulator-n4em2do8b.vercel.app/api/webhook",
     isEnabled: false
   },
   theme: {

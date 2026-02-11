@@ -75,6 +75,10 @@ const App: React.FC = () => {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          // If older saved configs used legacy names, normalize to the new brand name
+          if (parsed.botName === 'HealthCoach Pro' || parsed.botName === 'KFT Ai Assistance') {
+            parsed.botName = 'Karate Fitness AI Assistance';
+          }
           // Robust Deep Merge for whatsappConfig
           if (parsed.whatsappConfig) {
             parsed.whatsappConfig = { ...base.whatsappConfig, ...parsed.whatsappConfig };
@@ -448,7 +452,7 @@ const App: React.FC = () => {
             <div className="w-8 h-8 rounded-xl bg-wa-accent flex items-center justify-center shadow-lg shadow-wa-accent/20">
               <Zap className="w-5 h-5 text-wa-bg fill-current" />
             </div>
-            <span className="hidden md:inline text-sm font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-wa-accent to-emerald-400 uppercase">HEALTHCORE</span>
+            <span className="hidden md:inline text-sm font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-wa-accent to-emerald-400 uppercase">KARATE FITNESS AI</span>
           </div>
 
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide shrink">
