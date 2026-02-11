@@ -1,0 +1,7 @@
+{
+  "name": "Rule-Driven HealthBot Simulator",
+  "description": "A rule-based AI WhatsApp simulator for health consultations, BMI tracking, and course recommendations, driven entirely by dynamic AI instructions without hardcoded logic.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
