@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <span className="text-wa-bg font-black text-lg">HC</span>
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-tight">HealthCore Console</h1>
+            <h1 className="text-xl font-black tracking-tight">KFT Ai</h1>
             <p className="text-xs text-wa-muted font-medium uppercase tracking-[0.18em]">
               Secure Access
             </p>
@@ -87,11 +87,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           >
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
-
-          <p className="mt-4 text-[10px] text-wa-muted text-center font-medium">
-            Demo login: <span className="font-semibold">admin</span> /{' '}
-            <span className="font-semibold">healthcore123</span>
-          </p>
         </form>
       </div>
     </div>
