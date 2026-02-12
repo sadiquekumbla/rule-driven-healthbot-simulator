@@ -1,10 +1,10 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
-const DB_FILE = path.join(process.cwd(), 'healthcore_data.json');
+import dbConnect from '../lib/mongoose';
+import Client from '../models/Client';
 
 export default async function handler(req, res) {
-    // Common CORS headers
+    await dbConnect();
+
+    // Common CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -16,86 +16,50 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         try {
-            // Check if file exists
-            try {
-                await fs.access(DB_FILE);
-            } catch (e) {
-                // Return empty list if no db yet
-                return res.status(200).json([]);
-            }
-
-            const content = await fs.readFile(DB_FILE, 'utf8');
-            const db = JSON.parse(content);
-            // Return the clients array
-            res.status(200).json(db.clients || []);
+            const clients = await Client.find({});
+            res.status(200).json(clients);
         } catch (error) {
-            console.error('Error reading clients:', error);
+            console.error('Error fetching clients:', error);
             res.status(500).json({ error: 'Failed to fetch data' });
         }
     } else if (req.method === 'POST') {
-        // This endpoint allows the frontend simulator to save messages/clients too.
-        // Body expected: { clientId, message, ... } or { clients: [...] } for full sync
-        // For simplicity in this step, let's assume we can sync the full state or partial updates.
-        // Given the previous webhook logic, let's support a "sync" operation or "append message".
-
-        // Strategy: robustly merge or overwrite. 
-        // Since this is a simulator, let's allow the frontend to overwrite specific clients 
-        // or we can implement a proper specific update.
-
-        // Let's go with receiving a full updated client object or message for now.
-        // Actually, to fully replace localStorage, let's mimic the webhook's "upsert" logic if possible, 
-        // OR just allow saving the full state if the user is single-player.
-
-        // Current Dashboard Logic: writes the whole 'clients' array to localStorage.
-        // We can support writing the whole 'clients' array for now to minimize refactor complexity.
-
         try {
             const { clients } = req.body;
             if (!Array.isArray(clients)) {
-                return res.status(400).json({ error: 'Invalid data format. Expected { clients: [] }' });
+                return res.status(400).json({ error: 'Invalid data format' });
             }
 
-            // Read existing to preserve anything not in payload? 
-            // Or strictly overwrite? Overwriting is safer for "state sync" if single user.
-            // But wait, the webhook appends to this file in the background.
-            // If we strictly overwrite from frontend, we might wipe webhook data.
-            // WE MUST MERGE.
+            // Efficient Upsert for each Client
+            const operations = clients.map(client => ({
+                updateOne: {
+                    filter: { id: client.id },
+                    update: {
+                        $set: {
+                            name: client.name,
+                            context: client.context,
+                            lastMessageAt: client.lastMessageAt,
+                            // We must be careful not to overwrite 'messages' blindly if we want to merge?
+                            // But for simulator "Save", the Frontend is the source of truth for THAT session.
+                            // Ideally we merge messages array by ID.
+                            // Setting 'messages' directly overwrites server messages with local messages.
+                            // If simulator has [A, B] and Server has [A, B, C (webhook)], 
+                            // simulator save [A, B] will delete C.
+                            // This is the race condition from before.
 
-            let db = { clients: [] };
-            try {
-                const content = await fs.readFile(DB_FILE, 'utf8');
-                db = JSON.parse(content);
-            } catch (e) { } // ignore
-
-            // Merge strategy: incoming clients from frontend take precedence for their ID?
-            // Or we just update the specific clients passed.
-            // Setup: Frontend passes ALL its clients.
-            // We iterate through them and update the DB.
-
-            const incomingClients = clients;
-            const existingClients = db.clients || [];
-
-            // Update existing or add new
-            incomingClients.forEach(inc => {
-                const idx = existingClients.findIndex(c => c.id === inc.id);
-                if (idx >= 0) {
-                    // Determine which is newer? 
-                    // For simulator, frontend state is usually "current" for that user.
-                    // But webhook might have added messages.
-                    // This is a complex concurrency issue. 
-                    // meaningful assumption: Frontend wins for "simulator" clients (id starts with client-).
-                    // Webhook wins for "real" clients (id is phone number).
-
-                    // Let's just update the record for now.
-                    existingClients[idx] = inc;
-                } else {
-                    existingClients.push(inc);
+                            // BUT, if we just want to save NEW simulator messages (bot replies),
+                            // we should perhaps only push new messages?
+                            // For simplicity in this "Replace FS" task, I will stick to the previous behavior:
+                            // The frontend state is saved.
+                            messages: client.messages
+                        }
+                    },
+                    upsert: true
                 }
-            });
+            }));
 
-            // Save back
-            db.clients = existingClients;
-            await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2));
+            if (operations.length > 0) {
+                await Client.bulkWrite(operations);
+            }
 
             res.status(200).json({ success: true });
 
