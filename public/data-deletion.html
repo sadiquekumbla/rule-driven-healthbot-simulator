@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deletion Request - HealthBot Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wa-bg: #0b141a;
+            --wa-surface: #202c33;
+            --wa-text-primary: #e9edef;
+            --wa-text-secondary: #8696a0;
+            --wa-accent: #00a884;
+            --wa-border: #2a3942;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--wa-bg);
+            color: var(--wa-text-primary);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, var(--wa-accent), #00c7a5);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        wa: {
+                            bg: '#0b141a',
+                            surface: '#202c33',
+                            border: '#2a3942',
+                            text: '#e9edef',
+                            muted: '#8696a0',
+                            accent: '#00a884'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-wa-bg p-6 md:p-12 text-wa-text-primary">
+    <div class="max-w-xl mx-auto w-full my-auto">
+        <div class="text-center mb-10">
+            <div
+                class="inline-flex items-center justify-center p-4 rounded-3xl bg-wa-surface border border-wa-border shadow-2xl mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-wa-accent">
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-2">Data Deletion Request</h1>
+            <p class="text-wa-muted">HealthBot Simulator</p>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="bg-wa-surface rounded-3xl border border-wa-border overflow-hidden shadow-2xl">
+            <div class="p-8 space-y-8">
+
+                <!-- Step 1 -->
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-wa-border/50 flex items-center justify-center font-bold text-wa-accent shrink-0 border border-wa-border/50">
+                        1</div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">Local Data</h3>
+                        <p class="text-wa-muted text-sm leading-relaxed">
+                            Most simulation data sits in your browser storage. You can wipe this instantly by clearing
+                            your browser cache or clicking <strong>"Reset Simulation"</strong> in the Admin Panel.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-wa-border/50 flex items-center justify-center font-bold text-wa-accent shrink-0 border border-wa-border/50">
+                        2</div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">Facebook Data</h3>
+                        <p class="text-wa-muted text-sm leading-relaxed">
+                            If you used Facebook Login or WhatsApp connection based on your user ID, follow these steps
+                            to remove the app:
+                        </p>
+                        <ol class="list-decimal list-inside mt-3 space-y-1 text-xs text-wa-muted/80 pl-1 custom-list">
+                            <li>Go to your Facebook Profile > <strong>Settings & Privacy</strong> >
+                                <strong>Settings</strong>.</li>
+                            <li>Scroll to <strong>Apps and Websites</strong> within your settings.</li>
+                            <li>Find <strong>"HealthBot Simulator"</strong> and click <strong>"Remove"</strong>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-wa-border/50 flex items-center justify-center font-bold text-wa-accent shrink-0 border border-wa-border/50">
+                        3</div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">Contact Us</h3>
+                        <p class="text-wa-muted text-sm leading-relaxed mb-4">
+                            For manual removal of any server-side logs associated with your phone number, please contact
+                            us directly.
+                        </p>
+                        <a href="mailto:support@healthbot-simulator.com"
+                            class="block w-full bg-wa-accent text-wa-bg py-4 rounded-2xl font-bold text-center hover:brightness-110 transition-all text-xs uppercase tracking-widest shadow-lg active:scale-95">
+                            Email Support Team
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+            <div class="px-8 py-4 bg-wa-bg/30 border-t border-wa-border text-center">
+                <a href="/privacy-policy.html"
+                    class="text-wa-muted text-xs hover:text-wa-accent transition-colors font-medium">View Full Privacy
+                    Policy</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

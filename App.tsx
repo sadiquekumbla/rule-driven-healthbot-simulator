@@ -26,19 +26,8 @@ const App: React.FC = () => {
     return localStorage.getItem('healthcore_is_authenticated') === 'true';
   });
 
-  const [clients, setClients] = useState<Client[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('healthcore_clients');
-      if (saved) {
-        try {
-          return JSON.parse(saved, dateReviver);
-        } catch (e) {
-          console.error("Failed to load clients from localStorage", e);
-        }
-      }
-    }
-    return [];
-  });
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const [activeClientId, setActiveClientId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
@@ -106,11 +95,62 @@ const App: React.FC = () => {
   });
 
   // Persistence Effects
+  // Sync with Server (Replaces localStorage)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('healthcore_clients', JSON.stringify(clients));
-    }
-  }, [clients]);
+    const sync = async () => {
+      try {
+        const res = await fetch('/api/clients');
+        if (res.ok) {
+          const raw = await res.text();
+          const serverClients = JSON.parse(raw, dateReviver);
+
+          if (Array.isArray(serverClients)) {
+            setClients(prev => {
+              const clientMap = new Map(prev.map(c => [c.id, c]));
+              let hasChanges = false;
+
+              serverClients.forEach(sc => {
+                const lc = clientMap.get(sc.id);
+                if (!lc) {
+                  clientMap.set(sc.id, sc);
+                  hasChanges = true;
+                } else {
+                  const serverTime = new Date(sc.lastMessageAt).getTime();
+                  const localTime = new Date(lc.lastMessageAt).getTime();
+                  if (serverTime > localTime || sc.messages.length > lc.messages.length) {
+                    clientMap.set(sc.id, sc);
+                    hasChanges = true;
+                  }
+                }
+              });
+
+              return (hasChanges || prev.length === 0) ? Array.from(clientMap.values()) : prev;
+            });
+          }
+        }
+      } catch (e) { console.error("Sync error", e); }
+      setIsDataLoaded(true);
+    };
+
+    sync();
+    const poll = setInterval(sync, 4000);
+    return () => clearInterval(poll);
+  }, []);
+
+  // Auto-Save to Server
+  useEffect(() => {
+    if (!isDataLoaded || clients.length === 0) return;
+    const save = setTimeout(async () => {
+      try {
+        await fetch('/api/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clients })
+        });
+      } catch (e) { console.error("Save error", e); }
+    }, 2000);
+    return () => clearTimeout(save);
+  }, [clients, isDataLoaded]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -233,8 +273,8 @@ const App: React.FC = () => {
   }, [clients.length, botService]);
 
   useEffect(() => {
-    if (clients.length === 0) createNewClient();
-  }, [clients.length, createNewClient]);
+    if (isDataLoaded && clients.length === 0) createNewClient();
+  }, [clients.length, createNewClient, isDataLoaded]);
 
   const checkForTriggers = (text: string): MediaTrigger | null => {
     const lowText = text.toLowerCase();

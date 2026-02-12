@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - HealthBot Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wa-bg: #0b141a;
+      --wa-surface: #202c33;
+      --wa-text-primary: #e9edef;
+      --wa-text-secondary: #8696a0;
+      --wa-accent: #00a884;
+      --wa-border: #2a3942;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+    }
+    body { 
+      font-family: var(--font-main); 
+      background-color: var(--wa-bg);
+      color: var(--wa-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            wa: {
+              bg: '#0b141a',
+              surface: '#202c33',
+              border: '#2a3942',
+              text: '#e9edef',
+              muted: '#8696a0',
+              accent: '#00a884'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-wa-bg min-h-screen p-6 md:p-12">
+  <div class="max-w-3xl mx-auto">
+    <header class="mb-12">
+      <div class="w-12 h-12 bg-wa-accent rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-wa-accent/20">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-wa-bg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg>
+      </div>
+      <h1 class="text-4xl font-extrabold tracking-tight mb-2">Privacy Policy</h1>
+      <p class="text-wa-muted">Last updated: February 11, 2026</p>
+    </header>
+
+    <div class="space-y-8">
+      <!-- Data Collection -->
+      <section class="bg-wa-surface p-8 rounded-3xl border border-wa-border">
+        <h2 class="text-xl font-bold text-wa-accent mb-4 uppercase tracking-widest text-xs">01. Data Collection</h2>
+        <p class="leading-relaxed text-gray-300">
+          We collect minimal data to provide the simulation service. This includes:
+        </p>
+        <ul class="list-disc list-inside mt-4 space-y-2 text-wa-muted ml-2">
+          <li>Phone numbers (associated with WhatsApp accounts) for identification.</li>
+          <li>Message content sent to the bot for processing and response generation.</li>
+          <li>Basic device information for analytics and debugging.</li>
+        </ul>
+      </section>
+
+      <!-- WhatsApp Data Usage -->
+      <section class="bg-wa-surface p-8 rounded-3xl border border-wa-border">
+        <h2 class="text-xl font-bold text-wa-accent mb-4 uppercase tracking-widest text-xs">02. WhatsApp Data Usage</h2>
+        <p class="leading-relaxed text-gray-300">
+          Your WhatsApp data is used strictly for:
+        </p>
+        <ul class="list-disc list-inside mt-4 space-y-2 text-wa-muted ml-2">
+          <li>Sending and receiving messages within the simulation context.</li>
+          <li>Personalizing the automated responses provided by our AI engine.</li>
+        </ul>
+        <p class="leading-relaxed text-gray-300 mt-4">
+          We do <strong>not</strong> use your WhatsApp data for marketing, nor do we share it with third parties.
+        </p>
+      </section>
+
+      <!-- Webhook Usage -->
+      <section class="bg-wa-surface p-8 rounded-3xl border border-wa-border">
+        <h2 class="text-xl font-bold text-wa-accent mb-4 uppercase tracking-widest text-xs">03. Webhook & Infrastructure</h2>
+        <p class="leading-relaxed text-gray-300">
+          Our service utilizes secure webhooks to communicate with the WhatsApp Business API.
+        </p>
+        <div class="mt-4 bg-wa-bg/50 p-4 rounded-xl border border-wa-border/50">
+          <p class="text-sm text-wa-muted font-mono">
+            Endpoint: /api/webhook
+          </p>
+        </div>
+        <p class="leading-relaxed text-gray-300 mt-4">
+          All data transmitted via webhooks is encrypted in transit using TLS 1.2+.
+        </p>
+      </section>
+
+      <!-- Data Storage -->
+      <section class="bg-wa-surface p-8 rounded-3xl border border-wa-border">
+        <h2 class="text-xl font-bold text-wa-accent mb-4 uppercase tracking-widest text-xs">04. Data Storage</h2>
+        <p class="leading-relaxed text-gray-300">
+          Primary data storage is handled locally on your device (LocalStorage) for the simulation state.
+        </p>
+        <p class="leading-relaxed text-gray-300 mt-2">
+          Server-side logs are ephemeral and automatically rotated. We do not maintain a permanent database of your conversation history on our servers.
+        </p>
+      </section>
+
+      <!-- Deletion Policy -->
+      <section class="bg-wa-surface p-8 rounded-3xl border border-wa-border">
+        <h2 class="text-xl font-bold text-wa-accent mb-4 uppercase tracking-widest text-xs">05. User Rights & Deletion</h2>
+        <p class="leading-relaxed text-gray-300">
+          You retain full control over your data.
+        </p>
+        <div class="grid md:grid-cols-2 gap-4 mt-6">
+          <div class="bg-wa-bg p-5 rounded-2xl border border-wa-border">
+            <h3 class="font-bold text-white mb-2">Local Data</h3>
+            <p class="text-sm text-wa-muted">Clear your browser cache or use the "Reset" button in the admin panel to wipe all local simulation data instantly.</p>
+          </div>
+          <div class="bg-wa-bg p-5 rounded-2xl border border-wa-border">
+            <h3 class="font-bold text-white mb-2">Request Deletion</h3>
+            <p class="text-sm text-wa-muted">For server logs, visit our <a href="/data-deletion.html" class="text-wa-accent hover:underline">Data Deletion Page</a> to submit a formal request.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="mt-12 text-center text-wa-muted text-sm border-t border-wa-border pt-8">
+      <p>&copy; 2026 HealthBot Simulator. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>

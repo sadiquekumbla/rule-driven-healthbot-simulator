@@ -88,6 +88,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        <div className="mt-8 pt-6 border-t border-wa-border/30 flex flex-col items-center gap-2">
+          <p className="text-[9px] text-wa-muted/60 font-medium">By signing in, you agree to our policies.</p>
+          <div className="flex gap-4 text-[10px] text-wa-muted font-bold tracking-wider uppercase">
+            <a href="/privacy-policy.html" className="hover:text-wa-accent transition-colors" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            <span className="opacity-20">|</span>
+            <a href="/data-deletion.html" className="hover:text-wa-accent transition-colors" target="_blank" rel="noopener noreferrer">Data Deletion</a>
+          </div>
+        </div>
       </div>
     </div>
   );
